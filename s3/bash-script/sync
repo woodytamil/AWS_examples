@@ -1,1 +1,32 @@
 #!/usr/bin/env bash
+echo "==sync"
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "Please ennter the bucketname"
+    exit 1
+fi
+if [ -z "$2" ]; then
+    echo "Please ennter the prefix"
+    exit 1
+fi
+BUCKET_NAME=$1
+PREFIX_NAME=$2
+
+OUTPUT_DIR="/tmp/s3-bash-script"
+
+if [ -d "$OUTPUT_DIR" ]; then rm -Rf $OUTPUT_DIR; fi
+
+mkdir -p $OUTPUT_DIR
+
+NUM_FILES=$((RANDOM % 6 + 5))
+
+for ((i=0; i<=$NUM_FILES; i++)); do
+    FILE_NAME="$OUTPUT_DIR/$PREFIX_NAME_$i.txt"
+    dd if=/dev/urandom of="$FILE_NAME" bs=1024 count=$((RANDOM % 1024 + 1)) 2>/dev/null
+done
+
+tree $OUTPUT_DIR
+
+aws s3 sync $OUTPUT_DIR s3://$BUCKET_NAME/files
